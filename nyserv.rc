@@ -9,7 +9,7 @@ BEGIN
     BEGIN
       VALUE "FileDescription", "NewYear Service 2.0"
       VALUE "FileVersion", "2.0"
-      VALUE "Comments", "Показывает сколько дней осталось до Нового Года"
+      VALUE "Comments", "Shows the countdown till the New Year"
       VALUE "InternalName", "nyserv"
       VALUE "OriginalFilename", "nyserv.exe"
       VALUE "LegalCopyright", "© Pluton, 2006"

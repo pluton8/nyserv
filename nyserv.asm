@@ -1,10 +1,15 @@
 ;«««««««««««««««««««««««««««««««««««««««««««««««««««««««««««««««««««««««««««««««
 ;                            NewYear Service 2.0
+;     This service shows the countdown till the New Year's day on the login
+;       screen (at least, on Windows XP).
+;     Please email your comments, questions, and suggestions here:
+;       pluton.od@gmail.com
+;
 ;     Прога-сервис, которая показывает сколько дней/часов/чмс осталось до
 ;       наступления Нового Года.
 ;     Все замЫчания, вопросы и предложения по проге присылайте на мой мыл:
-;       plutonpluton@mail.ru
-;                                                    (c) by Pluton, Odessa, 2006
+;       pluton.od@gmail.com
+;                                               (c) by Pluton, Odessa, 2006-2013
 ;»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»
 .386
 .model flat, stdcall
@@ -26,12 +31,12 @@ includelib ..\lib\masm32.lib
 includelib ..\lib\debug.lib
 
 .const
-  crBkgnd equ 000000ffh         ; цвет фона окна
-  ;crText equ 00000000h          ; цвет фонта
+  crBkgnd equ 000000ffh         ; window background color
+  ;crText equ 00000000h          ; font color
   TimerID equ 800
   TimerRefreshID equ 801
-  milliseconds equ 20000        ; через сколько миллисекунд окно закроется
-  reftime equ 500               ; время обновления
+  milliseconds equ 20000        ; the delay before the window closes, in milliseconds
+  reftime equ 500               ; update interval, in milliseconds
 
 .data
   szName db "NewYear Service 2.0", 0
@@ -40,22 +45,22 @@ includelib ..\lib\debug.lib
   szfmt db "%lx", 0
   szdsk db 'Winlogon', 0
   table db 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31
-  szNY db "до Нового Года", 13, 10, "осталось ", 0
-  szDays db "%s%lu дней", 0
-  szHours db "%s%lu часов", 0
+  szNY db "The New Year is in ", 0
+  szDays db "%s%lu days", 0
+  szHours db "%s%lu hours", 0
   szHMS db "%s%lu:%lu:%lu", 0
-  szEOpen db "Не могу открыть SCM", 0
-  szECreate db "Не могу установить сервис", 0
-  szEOpenS db "Не могу открыть сервис", 0
-  szEDelete db "Не могу удалить сервис", 0
+  szEOpen db "Can't open SCM", 0
+  szECreate db "Can't install service", 0
+  szEOpenS db "Can't open service", 0
+  szEDelete db "Can't delete service", 0
   szHelp db "NewYear Service 2.0", 0dh, 0ah
-         db "     Programmed by Pluton, Odessa, 2006", 0dh, 0ah
-         db "Показывает сколько осталось дней до", 0dh, 0ah
-         db "ближайшего Нового Года", 0dh, 0ah
-         db "Параметры:", 0dh, 0ah
-         db "/s - установить сервис", 0dh, 0ah
-         db "/d - удалить сервис", 0dh, 0ah
-         db "/? - этот хелп", 0
+         db "     Programmed by Pluton, Odessa, 2006-2013", 0dh, 0ah
+         db "Shows the countdown till the closest", 0dh, 0ah
+         db "New Year's day", 0dh, 0ah
+         db "Parameters:", 0dh, 0ah
+         db "/s - install service", 0dh, 0ah
+         db "/d - delete service", 0dh, 0ah
+         db "/? - this help", 0
   crText COLORREF 0
 
 .data?
@@ -76,10 +81,10 @@ Handler proto :DWORD
 WndProc proto :DWORD, :DWORD, :DWORD, :DWORD
 
 GetNumParameters proc uses ebx edx
-  xor eax, eax  ; колво параметров
+  xor eax, eax  ; parameters number
   ;inc eax
-  xor edx, edx  ; флаг. есть ли кавычки
-  mov ebx, cmdline  ; указатель на параметры
+  xor edx, edx  ; flag, whether the quotes are present
+  mov ebx, cmdline  ; parameters pointer
 @b1:
   cmp byte ptr [ebx], 0
   je @endproc
@@ -194,8 +199,8 @@ start:
   ret
 
 NYServ proc dwArgc: DWORD, lpszArgv: DWORD
-; dwArgc - количество аргументов
-; lpszArgv - указатель на массив указателей на строки-аргументы
+; dwArgc - arguments number
+; lpszArgv - pointer to the string arguments pointers array
   local wcex: WNDCLASSEX
   local msg: MSG
   local hWnd: HWND
@@ -219,10 +224,10 @@ NYServ proc dwArgc: DWORD, lpszArgv: DWORD
   ;invoke GetUserObjectInformation, ws, UOI_NAME, addr buf, 100, NULL
   ;invoke MessageBox, NULL, addr buf, addr szName, MB_OK or MB_ICONWARNING or MB_SERVICE_NOTIFICATION
 ; ------------------------------------------------------------------------------
-  invoke OpenDesktop, addr szdsk, 0, FALSE, GENERIC_ALL                  ;<|
-  invoke SetThreadDesktop, eax                                           ;<|
-; это нужно раскомментировать чтобы окно появилось на десктопе винлогона ---/
-; пишем чего нам надо
+  invoke OpenDesktop, addr szdsk, 0, FALSE, GENERIC_ALL                  ;<-\
+  invoke SetThreadDesktop, eax                                           ;<-+
+; we need to uncomment this for the window to appear on the logon desktop --/
+; write what we want
 ; ------------------------------------------------------------------------------
   ;invoke Sleep, 5000
   invoke GetModuleHandle, NULL
