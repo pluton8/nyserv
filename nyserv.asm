@@ -1,11 +1,11 @@
-;В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«
-;                            NewYear Service 1.2
-;     РџСЂРѕРіР°-СЃРµСЂРІРёСЃ, РєРѕС‚РѕСЂР°СЏ РїРѕРєР°Р·С‹РІР°РµС‚ СЃРєРѕР»СЊРєРѕ РґРЅРµР№/С‡Р°СЃРѕРІ/С‡РјСЃ РѕСЃС‚Р°Р»РѕСЃСЊ РґРѕ
-;       РЅР°СЃС‚СѓРїР»РµРЅРёСЏ РќРѕРІРѕРіРѕ Р“РѕРґР°.
-;     Р’СЃРµ Р·Р°РјР«С‡Р°РЅРёСЏ, РІРѕРїСЂРѕСЃС‹ Рё РїСЂРµРґР»РѕР¶РµРЅРёСЏ РїРѕ РїСЂРѕРіРµ РїСЂРёСЃС‹Р»Р°Р№С‚Рµ РЅР° РјРѕР№ РјС‹Р»:
+;«««««««««««««««««««««««««««««««««««««««««««««««««««««««««««««««««««««««««««««««
+;                            NewYear Service 2.0
+;     Прога-сервис, которая показывает сколько дней/часов/чмс осталось до
+;       наступления Нового Года.
+;     Все замЫчания, вопросы и предложения по проге присылайте на мой мыл:
 ;       plutonpluton@mail.ru
 ;                                                    (c) by Pluton, Odessa, 2006
-;В»В»В»В»В»В»В»В»В»В»В»В»В»В»В»В»В»В»В»В»В»В»В»В»В»В»В»В»В»В»В»В»В»В»В»В»В»В»В»В»В»В»В»В»В»В»В»В»В»В»В»В»В»В»В»В»В»В»В»В»В»В»В»В»В»В»В»В»В»В»В»В»В»В»В»В»В»В»В»
+;»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»»
 .386
 .model flat, stdcall
 option casemap: none
@@ -26,46 +26,49 @@ includelib ..\lib\masm32.lib
 includelib ..\lib\debug.lib
 
 .const
-  crBkgnd equ 000000ffh         ; С†РІРµС‚ С„РѕРЅР° РѕРєРЅР°
-  ;crText equ 00000000h          ; С†РІРµС‚ С„РѕРЅС‚Р°
+  crBkgnd equ 000000ffh         ; цвет фона окна
+  ;crText equ 00000000h          ; цвет фонта
   TimerID equ 800
   TimerRefreshID equ 801
-  milliseconds equ 5000         ; С‡РµСЂРµР· СЃРєРѕР»СЊРєРѕ РјРёР»Р»РёСЃРµРєСѓРЅРґ РѕРєРЅРѕ Р·Р°РєСЂРѕРµС‚СЃСЏ
-  reftime equ 500               ; РІСЂРµРјСЏ РѕР±РЅРѕРІР»РµРЅРёСЏ
+  milliseconds equ 20000        ; через сколько миллисекунд окно закроется
+  reftime equ 500               ; время обновления
 
 .data
-  szName db "NewYear Service", 0
+  szName db "NewYear Service 2.0", 0
   ServiceTable dd offset szName, offset NYServ, 0, 0
-  szClassName db "NYclass", 0
+  szClassName db "NYclass2", 0
   szfmt db "%lx", 0
   szdsk db 'Winlogon', 0
   table db 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31
-  szNY db "РґРѕ РќРѕРІРѕРіРѕ Р“РѕРґР°", 13, 10, "РѕСЃС‚Р°Р»РѕСЃСЊ ", 0
-  szDays db "%s%lu РґРЅРµР№", 0
-  szHours db "%s%lu С‡Р°СЃРѕРІ", 0
+  szNY db "до Нового Года", 13, 10, "осталось ", 0
+  szDays db "%s%lu дней", 0
+  szHours db "%s%lu часов", 0
   szHMS db "%s%lu:%lu:%lu", 0
-  szEOpen db "Can't open a SCM", 0
-  szECreate db "Can't register a service", 0
-  szEOpenS db "Can't open a service", 0
-  szEDelete db "Can't delete a service", 0
-  szHelp db "NewYear Service 1.2", 0dh, 0ah
-         db "РџРѕРєР°Р·С‹РІР°РµС‚ СЃРєРѕР»СЊРєРѕ РѕСЃС‚Р°Р»РѕСЃСЊ РґРЅРµР№ РґРѕ", 0dh, 0ah
-         db "Р±Р»РёР¶Р°Р№С€РµРіРѕ РќРѕРІРѕРіРѕ Р“РѕРґР°", 0dh, 0ah
-         db "РџР°СЂР°РјРµС‚СЂС‹:", 0dh, 0ah
-         db "/s - СѓСЃС‚Р°РЅРѕРІРёС‚СЊ СЃРµСЂРІРёСЃ", 0dh, 0ah
-         db "/d - СѓРґР°Р»РёС‚СЊ СЃРµСЂРІРёСЃ", 0dh, 0ah
-         db "/? - СЌС‚РѕС‚ С…РµР»Рї", 0
+  szEOpen db "Не могу открыть SCM", 0
+  szECreate db "Не могу установить сервис", 0
+  szEOpenS db "Не могу открыть сервис", 0
+  szEDelete db "Не могу удалить сервис", 0
+  szHelp db "NewYear Service 2.0", 0dh, 0ah
+         db "     Programmed by Pluton, Odessa, 2006", 0dh, 0ah
+         db "Показывает сколько осталось дней до", 0dh, 0ah
+         db "ближайшего Нового Года", 0dh, 0ah
+         db "Параметры:", 0dh, 0ah
+         db "/s - установить сервис", 0dh, 0ah
+         db "/d - удалить сервис", 0dh, 0ah
+         db "/? - этот хелп", 0
   crText COLORREF 0
 
 .data?
   ServStatus SERVICE_STATUS <>
   ssh SERVICE_STATUS_HANDLE ?
   hInstance HMODULE ?
-  buf db 256 dup (?)
+  buf db 252 dup (?)  ; <|  две части
+  buf2 db 4 dup (?)   ; <|  одного буфера
   cmdline LPSTR ?
 ;  hTimer HANDLE ?
   sch SC_HANDLE ?
   schs SC_HANDLE ?
+  hMWnd HWND ?
 
 .code
 
@@ -73,10 +76,10 @@ Handler proto :DWORD
 WndProc proto :DWORD, :DWORD, :DWORD, :DWORD
 
 GetNumParameters proc uses ebx edx
-  xor eax, eax  ; РєРѕР»РІРѕ РїР°СЂР°РјРµС‚СЂРѕРІ
+  xor eax, eax  ; колво параметров
   ;inc eax
-  xor edx, edx  ; С„Р»Р°Рі. РµСЃС‚СЊ Р»Рё РєР°РІС‹С‡РєРё
-  mov ebx, cmdline  ; СѓРєР°Р·Р°С‚РµР»СЊ РЅР° РїР°СЂР°РјРµС‚СЂС‹
+  xor edx, edx  ; флаг. есть ли кавычки
+  mov ebx, cmdline  ; указатель на параметры
 @b1:
   cmp byte ptr [ebx], 0
   je @endproc
@@ -191,8 +194,8 @@ start:
   ret
 
 NYServ proc dwArgc: DWORD, lpszArgv: DWORD
-; dwArgc - РєРѕР»РёС‡РµСЃС‚РІРѕ Р°СЂРіСѓРјРµРЅС‚РѕРІ
-; lpszArgv - СѓРєР°Р·Р°С‚РµР»СЊ РЅР° РјР°СЃСЃРёРІ СѓРєР°Р·Р°С‚РµР»РµР№ РЅР° СЃС‚СЂРѕРєРё-Р°СЂРіСѓРјРµРЅС‚С‹
+; dwArgc - количество аргументов
+; lpszArgv - указатель на массив указателей на строки-аргументы
   local wcex: WNDCLASSEX
   local msg: MSG
   local hWnd: HWND
@@ -216,9 +219,10 @@ NYServ proc dwArgc: DWORD, lpszArgv: DWORD
   ;invoke GetUserObjectInformation, ws, UOI_NAME, addr buf, 100, NULL
   ;invoke MessageBox, NULL, addr buf, addr szName, MB_OK or MB_ICONWARNING or MB_SERVICE_NOTIFICATION
 ; ------------------------------------------------------------------------------
-;  invoke OpenDesktop, addr szdsk, 0, FALSE, GENERIC_ALL
-;  invoke SetThreadDesktop, eax
-; РїРёС€РµРј С‡РµРіРѕ РЅР°Рј РЅР°РґРѕ
+  invoke OpenDesktop, addr szdsk, 0, FALSE, GENERIC_ALL                  ;<|
+  invoke SetThreadDesktop, eax                                           ;<|
+; это нужно раскомментировать чтобы окно появилось на десктопе винлогона ---/
+; пишем чего нам надо
 ; ------------------------------------------------------------------------------
   ;invoke Sleep, 5000
   invoke GetModuleHandle, NULL
@@ -244,6 +248,7 @@ NYServ proc dwArgc: DWORD, lpszArgv: DWORD
   invoke CreateWindowEx, WS_EX_LAYERED or WS_EX_TOPMOST, addr szClassName, \
     NULL, WS_POPUP, 100, 420, 850, 300, NULL, NULL, hInstance, NULL
   mov hWnd, eax
+  mov hMWnd, eax
   invoke ShowWindow, eax, SW_SHOWNOACTIVATE
   invoke UpdateWindow, hWnd
   
@@ -262,26 +267,12 @@ NYServ proc dwArgc: DWORD, lpszArgv: DWORD
   ret
 NYServ endp
 
-; В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«
-
-  ; ---------------------------------------------------------------
-  ; This procedure was written by Tim Roberts
-  ; Minor fix by Jibz, December 2004
-  ; ---------------------------------------------------------------
-
-    .486
-    .model flat, stdcall  ; 32 bit memory model
-    option casemap :none  ; case sensitive
-
-    .code
-
-; В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«
-
-dwtoa proc uses ebx esi edi\
-dwValue:DWORD
+dwordtoa proc uses ebx esi edi \
+dwValue:DWORD, lpBuffer: LPSTR
 ; result => edx
+  ;int 3
   mov eax, dwValue
-  ;mov edi, [lpBuffer]
+  mov edi, [lpBuffer]
   test eax,eax
   jnz @@d2a1
 zero:
@@ -294,7 +285,7 @@ zero:
   ;add edi, 1
 ;pos:
   mov ecx, 3435973837 ; CCCCCCCD
-  ;mov esi, edi
+  mov esi, edi
   .while (eax > 0)
     mov ebx, eax
     mul ecx
@@ -307,31 +298,24 @@ zero:
     mov [edi],bl
     add edi, 1
   .endw
-
   mov byte ptr [edi], 0       ; terminate the string
-
   ; We now have all the digits, but in reverse order.
-
-  .while (esi < edi)
-    sub edi, 1
-    mov al, [esi]
-    mov ah, [edi]
-    mov [edi], al
-    mov [esi], ah
-    add esi, 1
-  .endw
-
+;  .while (esi < edi)
+;    sub edi, 1
+;    mov al, [esi]
+;    mov ah, [edi]
+;    mov [edi], al
+;    mov [esi], ah
+;    add esi, 1
+;  .endw
 @@dtaexit:
   ret
-dwtoa endp
-
-; В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«В«
-
-end
+dwordtoa endp
 
 Handler proc fdwControl: DWORD
   inc ServStatus.dwCheckPoint
   .if (fdwControl == SERVICE_CONTROL_STOP) || (fdwControl == SERVICE_CONTROL_SHUTDOWN)
+    invoke SendMessage, hMWnd, WM_CLOSE, 0, 0
     mov ServStatus.dwCurrentState, SERVICE_CONTROL_STOP
     ;invoke MessageBox, NULL, addr szName, addr szName, MB_OK or MB_SERVICE_NOTIFICATION
   .elseif fdwControl == SERVICE_CONTROL_CONTINUE
@@ -344,12 +328,8 @@ Handler proc fdwControl: DWORD
   ret
 Handler endp
 
-;GetDays proc
-;  ret
-;GetDays endp
-;
-WndProc proc uses edx ebx \
-hWnd: HWND, uMsg: UINT, wParam: WPARAM, lParam: LPARAM
+PaintProc proc uses edx ebx \
+hWnd: HWND
   local time: SYSTEMTIME
   local ps: PAINTSTRUCT
   local hdc: HDC
@@ -357,158 +337,185 @@ hWnd: HWND, uMsg: UINT, wParam: WPARAM, lParam: LPARAM
   local holdfont: HFONT
   local rect: RECT
   ;local crold: COLORREF
+  invoke GetLocalTime, addr time
+  ;mov time.wMonth, 12
+  ;mov time.wDay, 13
+  ;mov time.wYear, 2008
+  ;mov time.wHour, 22
+  invoke BeginPaint, hWnd, addr ps
+  mov hdc, eax
   
-  .if uMsg == WM_DESTROY
-    invoke GetClassLong, hWnd, GCL_HBRBACKGROUND
-    .if eax != NULL
-      invoke DeleteObject, eax
+  mov days, 0
+  xor eax, eax
+  ;xor edx, edx
+  ;xor ebx, ebx
+  ;int 3
+  mov ax, time.wYear
+  and eax, 00000003h
+  ;mov ax, 2008
+  ;mov bl, 4
+  ;PrintDec eax
+  ;PrintDec ebx
+  ;PrintDec edx
+  ;div bx
+  ;PrintDec eax
+  ;PrintDec ebx
+  ;PrintDec edx
+  .if al == 0
+    inc byte ptr [table + 1]
+  .endif
+  
+  mov dx, 12
+  sub dx, time.wMonth
+@@loop1:
+  ;PrintHex days
+  test dx, dx
+  jz @@end_loop1
+  ;invoke DebugBreak
+  xor ebx, ebx
+  mov bx, 12
+  sub bx, dx
+  ;PrintHex ebx
+  add ebx, offset table
+  ;PrintHex ebx
+  ;mov ebx, [ebx]
+  xor eax, eax
+  mov al, byte ptr [ebx]
+  ;PrintHex ebx
+  add days, eax 
+  ;PrintHex days
+  dec dx
+  jnz @@loop1
+  ;PrintHex days
+  
+@@end_loop1:
+  ;xor ebx, ebx
+  mov bx, time.wDay
+  mov eax, offset table
+  add ax, time.wMonth
+  dec ax
+  mov al, byte ptr [eax]
+  sub al, bl
+  cbw
+  cwde
+  add days, eax
+  ;PrintHex days
+  
+  .if byte ptr [table + 1] == 29
+    dec byte ptr [table + 1]
+  .endif
+  
+  invoke CreateFont, 120, 0, 0, 0, FW_BLACK, FALSE, FALSE, FALSE, \
+    RUSSIAN_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, \
+    DEFAULT_QUALITY, DEFAULT_PITCH or FF_SCRIPT, NULL
+  invoke SelectObject, hdc, eax
+  mov holdfont, eax
+  
+  ;xor eax, eax
+  xor edx, edx
+  ;xor ebx, ebx
+  mov eax, days
+  mov ebx, 255
+  mul bx
+  mov ebx, 365
+  div bx
+  ;int 3
+  ;mov ah, 255
+  ;sub ah, al
+  ;int 3
+  sub al, 255
+  neg al
+  ;and eax, 000000ffh
+  mov ah, al
+  ;shl eax, 8
+  ;mov al, ah
+  mov crText, eax
+  ;PrintDec crText
+  ;mov crText, 00ffffffh
+  
+  invoke SetTextColor, hdc, crText
+  ;mov crold, eax
+  invoke SetBkMode, hdc, TRANSPARENT
+  invoke GetClientRect, hWnd, addr rect
+  invoke lstrcpy, addr buf, addr szNY
+  .if days != 0
+    ;int 3
+    ;dec days
+    invoke dwordtoa, days, addr buf2
+    xor ebx, ebx
+    .if byte ptr [buf2+1] != '1'
+      .if byte ptr [buf2] == '1'
+        inc ebx
+      .elseif (byte ptr [buf2] >= '2') && (byte ptr [buf2] <= '4')
+        inc ebx
+        inc ebx
+      .endif
     .endif
+    ;push edx
+    invoke wsprintf, addr buf, addr szDays, addr buf, days
+    ;mov edx, days
+    ;and edx, 0000000fh
+    invoke lstrlen, addr buf
+    ;pop edx
+    .if bl == 1
+      sub eax, 3
+      mov dword ptr buf[eax], 000FCEDE5h
+      mov dword ptr buf[21], 2020FFF1h
+    .elseif bl == 2
+      sub eax, 2
+      mov word ptr buf[eax], 00FFh
+    .endif
+  .else
+    xor ebx, ebx
+    mov bx, time.wHour
+    sub bx, 24
+    neg bx
+    .if ebx > 6
+      invoke wsprintf, addr buf, addr szHours, addr buf, ebx
+    .else
+      xor edx, edx
+      mov dx, 60
+      sub dx, time.wSecond
+      push edx
+      mov dx, 60
+      sub dx, time.wMinute
+      push edx
+      push ebx
+      push offset buf
+      push offset szHMS
+      push offset buf
+      call wsprintf
+      add esp, 24
+    .endif
+    ;invoke wsprintf, addr buf
+  .endif
+  invoke lstrlen, addr buf
+  mov ebx, eax
+  invoke DrawText, hdc, addr buf, ebx, addr rect, DT_CENTER; or DT_WORDBREAK
+  invoke SelectObject, hdc, holdfont
+  invoke DeleteObject, eax
+  
+  invoke EndPaint, hWnd, addr ps
+  ret
+PaintProc endp
+
+WndProc proc \
+hWnd: HWND, uMsg: UINT, wParam: WPARAM, lParam: LPARAM
+  .if uMsg == WM_DESTROY
+    ;int 3
+;    invoke dwordtoa, 18, addr buf
+;    invoke MessageBox, NULL, addr buf, addr szName, MB_OK or MB_SERVICE_NOTIFICATION
+    invoke GetClassLong, hWnd, GCL_HBRBACKGROUND
+;    .if eax != NULL
+    invoke DeleteObject, eax
+;    .endif
     invoke KillTimer, hWnd, TimerRefreshID
     invoke PostQuitMessage, NULL
   ;.elseif uMsg==WM_CREATE
   ;invoke wsprintf, addr buf, addr szfmt,  eax
   ;invoke MessageBox, NULL, addr buf, addr szName, MB_OK or MB_SERVICE_NOTIFICATION
   .elseif uMsg == WM_PAINT
-    invoke GetLocalTime, addr time
-    ;mov time.wMonth, 12
-    ;mov time.wDay, 13
-    ;mov time.wYear, 2008
-    ;mov time.wHour, 22
-    invoke BeginPaint, hWnd, addr ps
-    mov hdc, eax
-    
-    mov days, 0
-    xor eax, eax
-    xor edx, edx
-    xor ebx, ebx
-    mov ax, time.wYear
-    ;mov ax, 2008
-    mov bl, 4
-    ;PrintDec eax
-    ;PrintDec ebx
-    ;PrintDec edx
-    div bx
-    ;PrintDec eax
-    ;PrintDec ebx
-    ;PrintDec edx
-    .if dl == 0
-      inc byte ptr [table + 1]
-    .endif
-    
-    mov dx, 12
-    sub dx, time.wMonth
-  @@loop1:
-    ;PrintHex days
-    test dx, dx
-    jz @@end_loop1
-    ;invoke DebugBreak
-    xor ebx, ebx
-    mov bx, 12
-    sub bx, dx
-    ;PrintHex ebx
-    add ebx, offset table
-    ;PrintHex ebx
-    ;mov ebx, [ebx]
-    xor eax, eax
-    mov al, byte ptr [ebx]
-    ;PrintHex ebx
-    add days, eax 
-    ;PrintHex days
-    dec dx
-    jnz @@loop1
-    ;PrintHex days
-    
-  @@end_loop1:
-    ;xor ebx, ebx
-    mov bx, time.wDay
-    mov eax, offset table
-    add ax, time.wMonth
-    dec ax
-    mov al, byte ptr [eax]
-    sub al, bl
-    cbw
-    cwde
-    add days, eax
-    ;PrintHex days
-    
-    .if byte ptr [table + 1] == 29
-      dec byte ptr [table + 1]
-    .endif
-    
-    invoke CreateFont, 120, 0, 0, 0, FW_BLACK, FALSE, FALSE, FALSE, \
-      RUSSIAN_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, \
-      DEFAULT_QUALITY, DEFAULT_PITCH or FF_SCRIPT, NULL
-    invoke SelectObject, hdc, eax
-    mov holdfont, eax
-    
-    ;xor eax, eax
-    xor edx, edx
-    ;xor ebx, ebx
-    mov eax, days
-    mov ebx, 255
-    mul bx
-    mov ebx, 365
-    div bx
-    ;int 3
-    ;mov ah, 255
-    ;sub ah, al
-    ;int 3
-    sub al, 255
-    neg al
-    ;and eax, 000000ffh
-    mov ah, al
-    ;shl eax, 8
-    ;mov al, ah
-    mov crText, eax
-    ;PrintDec crText
-    ;mov crText, 00ffffffh
-    
-    invoke SetTextColor, hdc, crText
-    ;mov crold, eax
-    invoke SetBkMode, hdc, TRANSPARENT
-    invoke GetClientRect, hWnd, addr rect
-    invoke lstrcpy, addr buf, addr szNY
-    .if days != 0
-      ;int 3
-      invoke wsprintf, addr buf, addr szDays, addr buf, days
-      ;mov edx, days
-      ;and edx, 0000000fh
-      ;invoke lstrlen, addr buf
-      ;.if dl == 1
-      ;  sub eax, 3
-      ;  mov dword ptr buf[eax], 000FCEDE5h
-      ;.endif
-    .else
-      xor ebx, ebx
-      mov bx, time.wHour
-      sub bx, 24
-      neg bx
-      .if ebx > 6
-        invoke wsprintf, addr buf, addr szHours, addr buf, ebx
-      .else
-        xor edx, edx
-        mov dx, 60
-        sub dx, time.wSecond
-        push edx
-        mov dx, 60
-        sub dx, time.wMinute
-        push edx
-        push ebx
-        push offset buf
-        push offset szHMS
-        push offset buf
-        call wsprintf
-        add esp, 24
-      .endif
-      ;invoke wsprintf, addr buf
-    .endif
-    invoke lstrlen, addr buf
-    mov ebx, eax
-    invoke DrawText, hdc, addr buf, ebx, addr rect, DT_CENTER; or DT_WORDBREAK
-    invoke SelectObject, hdc, holdfont
-    invoke DeleteObject, eax
-    
-    invoke EndPaint, hWnd, addr ps
+    invoke PaintProc, hWnd
   .elseif uMsg == WM_CREATE
     invoke SetLayeredWindowAttributes, hWnd, crBkgnd, 0, LWA_COLORKEY
     invoke SetTimer, hWnd, TimerID, milliseconds, NULL
@@ -531,5 +538,4 @@ hWnd: HWND, uMsg: UINT, wParam: WPARAM, lParam: LPARAM
   xor eax, eax
   ret
 WndProc endp
-
 end start
